@@ -4,19 +4,36 @@
     <!-- Form -->
     <div class="row">
          <div class="col-lg-6">
-            <form class="form-horizontal">
+            <form class="form-horizontal" action="{{ url_for('sign_up') }}" method="POST">
+                {{ form.csrf_token }}
                 <fieldset>
                     <legend>Legend</legend>
                      <div class="form-group">
                          <label for="inputEmail" class="col-lg-2 control-label">Email</label>
                             <div class="col-lg-10">
-                                 <input type="text" class="form-control" id="inputEmail" placeholder="Email">
+                                 <!--<input type="text" class="form-control" id="inputEmail" placeholder="Email">-->
+                                {{ form.email() }}
                             </div>
                      </div>
                      <div class="form-group">
                           <label for="inputPassword" class="col-lg-2 control-label">Password</label>
                             <div class="col-lg-10">
-                                <input type="password" class="form-control" id="inputPassword" placeholder="Password">
+                                <!--<input type="password" class="form-control" id="inputPassword" placeholder="Password">-->
+                                {{ form.password() }}
+                            </div>
+                     </div>
+                     <div class="form-group">
+                          <label for="confirmInputPassword" class="col-lg-2 control-label">Confirm Password</label>
+                            <div class="col-lg-10">
+                                <!--<input type="password" class="form-control" id="confirmInputPassword" placeholder="Password">-->
+                                {{ form.confirm() }}
+                            </div>
+                     </div>
+                     <div class="form-group">
+                          <label for="summonerName" class="col-lg-2 control-label">Summoner's Name</label>
+                            <div class="col-lg-10">
+                                <!--<input type="text" class="form-control" id="summonerName" placeholder="In-Game Name">-->
+                                {{ form.summoner_name() }}
                             </div>
                      </div>
                      <div class="form-group">
@@ -26,6 +43,16 @@
                         </div>
                      </div>
                 </fieldset>
+                {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                <ul class=flashes>
+                {% for message in messages %}
+                <li>{{ message }}</li>
+                {% endfor %}
+                </ul>
+                {% endif %}
+                {% endwith %}
+                <p>Do you want to log in?
             </form>
          </div>
     </div>

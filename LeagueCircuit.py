@@ -44,8 +44,9 @@ def log_in():
 
     form = LogInForm()
     if form.validate_on_submit():
-        print form.email.data, form.password.data
-
+        connect.cursor.execute("SELECT * FROM LEAGUE.USER WHERE EMAIL = email")
+        records =connect.cursor.fetchaall()
+        print records
     return render_template("login.html", form=form)
 
 @app.route('/about')
@@ -59,7 +60,7 @@ def contact():
 if __name__ == '__main__':
     app.run(debug=True)
 
-def connect():
+class connect():
     conn_string = "host='localhost' dbname='LEAGUE_CIRCUIT' user='postgres' password='RAMP'"
     print "connecting to database\n ->%s" % (conn_string)
     conn = psycopg2.connect(conn_string)

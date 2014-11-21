@@ -22,10 +22,7 @@ def sign_up():
 
     form = SignUpForm()
     if form.validate_on_submit():
-        flash("success")
-        # Call some function to check if new
-        # IF NOT UNIQUE FLASH ERROR
-        # else get summoners ID
+
         return redirect('home')
 
 
@@ -44,9 +41,17 @@ def log_in():
 
     form = LogInForm()
     if form.validate_on_submit():
-        connect.cursor.execute("SELECT * FROM LEAGUE.USER WHERE EMAIL = email")
+        connect.cursor.execute("SELECT * FROM LEAGUE.USER WHERE USERNAME = form.email")
         records =connect.cursor.fetchaall()
-        print records
+
+        if records[1] == form.password:
+            sumname = records[3]
+            #valid session = true
+            return redirect('home')
+
+    else:
+        #flash error
+        return render_template("login.html", form=form)
     return render_template("login.html", form=form)
 
 @app.route('/about')

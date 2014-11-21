@@ -1,3 +1,6 @@
+import psycopg2
+import sys
+import pprint
 from flask import Flask, render_template, redirect, flash
 from flask.ext.wtf import Form
 from wtforms import StringField, PasswordField
@@ -55,17 +58,15 @@ def contact():
 
 if __name__ == '__main__':
     app.run(debug=True)
-#import psycopg2
-#import sys
-#import pprint
-#def main():
- #   conn_string = "host='localhost' dbname='LEAGUE_CIRCUIT' user='postgres' password='password'"
-  #  print "connecting to database\n ->%s" % (conn_string)
-   # conn = psycopg2.connect(conn_string)
-    #cursor = conn.cursor()
+
+def connect():
+    conn_string = "host='localhost' dbname='LEAGUE_CIRCUIT' user='postgres' password='RAMP'"
+    print "connecting to database\n ->%s" % (conn_string)
+    conn = psycopg2.connect(conn_string)
+    cursor = conn.cursor()
     #cursor.execute("SELECT Summoner_id FROM LEAGUE.PLAYER WHERE Summoner_id = 48445998")
     #records = cursor.fetchall()
-    #print records
+
 #if __name__ == "__main__":
 
 #    main()

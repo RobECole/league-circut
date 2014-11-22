@@ -39,13 +39,22 @@ def log_in():
         email = StringField()
         password = PasswordField()
 
+        def __str__(self):
+            return  form.email.data
+
     form = LogInForm()
     if form.validate_on_submit():
-        connect.cursor.execute("SELECT * FROM LEAGUE.USER WHERE USERNAME = form.email")
-        records =connect.cursor.fetchaall()
-
-        if records[1] == form.password:
-            sumname = records[3]
+        #print form.email.
+        #qrrystr = "SELECT * FROM LEAGUE.USER WHERE username = (%s)", (form.email)# + form.email#connect.cursor.execute("SELECT * FROM LEAGUE.USER WHERE username = email()")
+        value = form.email.data.encode('ascii','ignore')
+        print value
+        connect.cursor.execute("SELECT * FROM LEAGUE.USER WHERE username = '{0}'" .format(value))
+        records = connect.cursor.fetchall()
+        print records
+        print records[0][1]
+        password = form.password.data.encode('ascii','ignore')
+        if records[0][1] == password:
+            sumname = records[0][2]
             #valid session = true
             return redirect('home')
 
@@ -62,9 +71,6 @@ def about():
 def contact():
     return render_template("contact.html")
 
-if __name__ == '__main__':
-    app.run(debug=True)
-
 class connect():
     conn_string = "host='localhost' dbname='LEAGUE_CIRCUIT' user='postgres' password='RAMP'"
     print "connecting to database\n ->%s" % (conn_string)
@@ -72,6 +78,11 @@ class connect():
     cursor = conn.cursor()
     #cursor.execute("SELECT Summoner_id FROM LEAGUE.PLAYER WHERE Summoner_id = 48445998")
     #records = cursor.fetchall()
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
 
 #if __name__ == "__main__":
 

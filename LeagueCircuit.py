@@ -22,8 +22,34 @@ def sign_up():
 
     form = SignUpForm()
     if form.validate_on_submit():
+        mail = form.email.data.encode('ascii','ignore')
+        mail = mail.lower()
+        name = form.summoner_name.data.encode('ascii','ignore')
+        name = name.lower()
+        connect.cursor.execute("SELECT username FROM LEAGUE.USER WHERE username = '{0}'".format(mail))
+        uniqueuser = connect.cursor.fetchall()
+        connect.cursor.execute("SELECT sum_name FROM LEAGUE.USER WHERE sum_name = '{0}'".format(name))
+        uniquename = connect.cursor.fetchall()
+        if uniqueuser:
+            print "user id taken"
+            return redirect('sign-up')
+            #need to put error message
+        else:
+            if uniquename:
+                print "summoner name taken"
+                return redirect('sign-up')
+            else:
+                if form.password.data.encode('ascii','ignore') == form.confirm.data.encode('ascii','ignore'):
+                    connect.cursor.execute("INSERT INTO LEAGUE.USER VALUES ('{0}','{1}','{2}')".format(mail,form.password.data.encode('ascii','ignore'),name))
+                    connect.conn.commit()
+                    names = connect.cursor.execute("SELECT * FROM LEAGUE.USER WHERE username = '{0}'".format(mail))
+                    print names
+                    return redirect('home')
+                else:
+                    print "passwords don't match"
+                    return redirect('sign-up')
 
-        return redirect('home')
+
 
 
     return render_template("signup.html", form=form)
@@ -47,11 +73,10 @@ def log_in():
         #print form.email.
         #qrrystr = "SELECT * FROM LEAGUE.USER WHERE username = (%s)", (form.email)# + form.email#connect.cursor.execute("SELECT * FROM LEAGUE.USER WHERE username = email()")
         value = form.email.data.encode('ascii','ignore')
+        value = value.lower()
         print value
         connect.cursor.execute("SELECT * FROM LEAGUE.USER WHERE username = '{0}'" .format(value))
         records = connect.cursor.fetchall()
-        print records
-        print records[0][1]
         password = form.password.data.encode('ascii','ignore')
         if records[0][1] == password:
             sumname = records[0][2]

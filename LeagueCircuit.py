@@ -1,9 +1,11 @@
 import psycopg2
-import requests
+import sys
+from os import path
 from flask import Flask, render_template, redirect, flash, session, escape, request
 from flask.ext.wtf import Form
 from wtforms import StringField, PasswordField
-
+#sys.path.append(path("C:/Aaron's/Classes/Data System Management/Riot-Watcher"))
+#from riotwatcher as Connecttoriot
 app = Flask(__name__)
 app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 
@@ -81,7 +83,6 @@ def log_in():
                 print session['username']
                 return redirect('home')
         else:
-            #flash error
             return render_template("login.html", form=form)
     return render_template("login.html", form=form)
 

@@ -1,0 +1,351 @@
+CREATE DATABASE "league_circuit"
+  WITH OWNER = postgres
+       ENCODING = 'UTF8'
+       TABLESPACE = pg_default
+       --LC_COLLATE = 'French_France.1252'
+       --LC_CTYPE = 'French_France.1252'
+       CONNECTION LIMIT = -1;
+CREATE SCHEMA "league"
+  AUTHORIZATION postgres;
+--the LC_COLLATE and LC_CTYPE are automatically generated when making the database, not sure why it goes to french, everything shows in english except error messages
+
+CREATE TABLE "league"."player"
+(
+  summoner_id bigint,
+  summoner_name text,
+  player_level integer,
+  recent_games_id bigint,
+  rank text,
+  team_id text,
+  unranked_win integer,
+  ranked_win3v3 integer,
+  ranked_win5v5 integer,
+  primary key(summoner_id)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE "league"."player"
+  OWNER TO postgres;
+--ALTER TABLE "league"."player" ADD CONSTRAINT standing FOREIGN KEY ( summoner_id, team_id ) REFERENCES "league"."standing"( summoner_id, team_id );
+--ALTER TABLE "league"."player" ADD CONSTRAINT team FOREIGN KEY ( team_id ) REFERENCES "league"."team"( team_id );
+
+
+
+CREATE TABLE "league"."standing"
+(
+  summoner_id bigint,
+  win integer,
+  loss integer,
+  standing integer,
+  team_id text,
+  primary key(summoner_id,team_id)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE "league"."standing"
+  OWNER TO postgres;
+--ALTER TABLE "league"."standing" ADD CONSTRAINT player_1 FOREIGN KEY ( summoner_id ) REFERENCES "league"."player"( summoner_id );
+--ALTER TABLE "league"."standing" ADD CONSTRAINT team_0 FOREIGN KEY ( team_id ) REFERENCES "league"."team"( team_id );
+
+
+CREATE TABLE "league"."champion"
+(
+  champ_id integer,
+  ranked_play_enabled text,
+  bot_enabled text,
+  free_to_play text,
+  primary key(champ_id)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE "league"."champion"
+  OWNER TO postgres;
+
+
+CREATE TABLE "league"."champname"
+(
+  id integer,
+  name text,
+  primary key(name)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE "league"."champname"
+  OWNER TO postgres;
+
+
+CREATE TABLE "league"."match"
+(
+  summoner_id bigint,
+  match_id bigint,
+  champion_id integer,
+  team_id bigint,
+  game_type text,
+  winner boolean,
+  length int,
+  primary key(summoner_id,match_id)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE "league"."match"
+  OWNER TO postgres;
+--ALTER TABLE "league"."match" ADD CONSTRAINT match_stats FOREIGN KEY ( champion_id, summoner_id, match_id ) REFERENCES "league"."match_stats"( champion_id, summoner_id, match_id );
+--ALTER TABLE "league"."match" ADD CONSTRAINT player FOREIGN KEY ( summoner_id ) REFERENCES "league"."player"( summoner_id );
+
+
+CREATE TABLE "league"."match_stats"
+(
+  champion_id integer,
+  level integer,
+  kills integer,
+  deaths integer,
+  assists integer,
+  creep_kills integer,
+  gold_earned integer,
+  damage_dealt_to_champs integer,
+  match_id bigint,
+  summoner_id bigint,
+  primary key(champion_id, summoner_id, match_id)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE "league"."match_stats"
+  OWNER TO postgres;
+--ALTER TABLE "league"."match_stats" ADD CONSTRAINT "match" FOREIGN KEY ( summoner_id, match_id ) REFERENCES "league"."match"( summoner_id, match_id );
+--ALTER TABLE "league"."match_stats" ADD CONSTRAINT player_0 FOREIGN KEY ( summoner_id ) REFERENCES "league"."player"( summoner_id );
+
+
+CREATE TABLE "league"."team"
+(
+  team_id text,
+  wins integer,
+  losses integer,
+  rank text,
+  name text,
+  type text,
+  primary key(team_id)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE "league"."team"
+  OWNER TO postgres;
+--ALTER TABLE "league"."team" ADD CONSTRAINT champname FOREIGN KEY ( "name" ) REFERENCES "league"."champname"( "name" );
+
+CREATE TABLE "league"."user"(
+username text,
+pw text,
+sum_name text)
+
+INSERT INTO "league"."player" VALUES
+	(48445998,'Magicalhorseman',11,0,'UNRANKED',0,25,0,0),
+	(30849874,'Rockripper21',30,12513255,'RANKED','team-0d3606c0-ee7e-11e1-bcf4-782bcb4d0bb2',604,4,6),
+	(35980208,'Moysauce08',30,0,'UNRANKED','team-35667d80-45f9-11e4-9fad-782bcb4d1861',126,0,0),
+	(22091011,'Retroprocessor',12,0,'UNRANKED',0,24,0,0),
+	(34896182,'Shenron Gandamu',30,0,'UNRANKED','team-35667d80-45f9-11e4-9fad-782bcb4d1861',65,0,0),
+	(45979934,'Angelofoblivion',30,10172489,'RANKED','team-5865b310-07e6-11e4-8692-782bcb4d1861',232,34,1)
+;
+
+
+INSERT INTO "league"."standing" VALUES
+	(48445998, 25,10,1,'team-35667d80-45f9-11e4-9fad-782bcb4d1xxx'),
+	(30849874,19,16,3,'team-0d3606c0-ee7e-11e1-bcf4-782bcb4d0bb2'),
+	(35980208,24,11,2,'team-35667d80-45f9-11e4-9fad-782bcb4d1861'),
+	(22091011,5,30,6,'team-35667d80-45f9-11e4-9fad-782bcb4d132as'),
+	(34896182,14,21,5,'team-35667d80-45f9-11e4-9fad-782bcb4d1861'),
+	(45979934,15,20,4,'team-5865b310-07e6-11e4-8692-782bcb4d1861')
+;
+
+
+INSERT INTO "league"."team" VALUES
+	('team-35667d80-45f9-11e4-9fad-782bcb4d1861',0,0,'UNRANKED','The Chinese Buffet','RANKED_team_5x5'),
+	('team-0d3606c0-ee7e-11e1-bcf4-782bcb4d0bb2',0,0,'RANKED','Its Dangerous 2 go Alone','RANKED_team_5x5'),
+	('team-2697b500-cef6-11e3-a9a8-782bcb4d1861'
+	,6,6,'RANKED','3 Make A Crowd','RANKED_team_3x3'),
+	('team-10b3e000-481e-11e4-a277-782bcb4d0bb2',4,5,'RANKED','RiffRaff5','RANKED_team_5x5'),
+	('team-5865b310-07e6-11e4-8692-782bcb4d1861',29,31,'RANKED','Crystals Angels','RANKED_team_3x3'),
+	('team-2cfcc170-96a1-11e3-81fa-782bcb4d0bb2',21,23,'RANKED','Baratheon','RANKED_team_3x3')
+;
+
+
+INSERT INTO "league"."champion" VALUES
+	(226,true,false,false),
+	(103,true,false,false),
+	(84,true,false,false),
+	(12,true,true,false),
+	(32,true,true,false),
+	(34,true,false,false),
+	(63,true,true,true)
+;
+
+
+INSERT INTO "league"."match" VALUES
+	(43632889,10172489,80,100,'RANKED_team_3x3',true,1505),
+	(51893181,10172489,150,100,'RANKED_team_3x3',true,1505),
+	(27788933,10172489,7,100,'RANKED_team_3x3',true,1505),
+	(45979934,10172489,127,200,'RANKED_team_3x3',false,1505),
+	(37743761,10172489,67,200,'RANKED_team_3x3',false,1505),
+	(37836000,10172489,24,200,'RANKED_team_3x3',false,1505),
+	(40631144,12513255,126,100,'RANKED_SOLO_5x5',true,1934),
+	(44048752,12513255,236,100,'RANKED_SOLO_5x5',true,1934),
+	(37529194,12513255,412,100,'RANKED_SOLO_5x5',true,1934),
+	(27673136,12513255,107,100,'RANKED_SOLO_5x5',true,1934),
+	(30849874,12513255,39,100,'RANKED_SOLO_5x5',true,1934),
+	(30903072,12513255,13,200,'RANKED_SOLO_5x5',false,1934),
+	(35852577,12513255,115,200,'RANKED_SOLO_5x5',false,1934),
+	(39048612,12513255,222,200,'RANKED_SOLO_5x5',false,1934),
+	(31031202,12513255,32,200,'RANKED_SOLO_5x5',false,1934),
+	(20660691,12513255,10,200,'RANKED_SOLO_5x5',false,1934)
+;
+
+
+INSERT INTO "league"."match_stats" VALUES
+	(80,15,13,2,4,25,11953,13687,10172489,43632889),
+	(150,15,4,5,12,153,10615,17924,10172489,51893181),
+	(7,14,8,2,7,104,9572,18772,10172489,27788933),
+	(127,12,3,8,1,84,6505,9356,10172489,45979934),
+	(67,14,2,9,3,130,7600,19357,10172489,37743761),
+	(24,13,4,8,3,33,7817,10825,10172489,37836000),
+	(126,16,9,2,8,199,13786,17027,12513255,40631144),
+	(236,16,16,3,8,141,14815,23175,12513255,44048752),
+	(412,14,3,7,22,11,11373,2437,12513255,37529194),
+	(107,15,4,4,5,34,11286,7475,12513255,27673136),
+	(39,16,5,4,8,160,10218,12439,12513255,30849874),
+	(13,15,6,5,8,166,10014,24854,12513255,30903072),
+	(115,15,5,4,6,233,10888,19432,12513255,35852577),
+	(222,13,5,17,4,154,9052,12232,12513255,39048612),
+	(32,15,3,6,7,24,8792,12251,12513255,31031202),
+	(10,13,1,6,10,15,6250,3787,12513255,20660691)
+;
+
+
+--RIOT api only allows for search of champions by champion ID, therefore it is essential for the user to be able to enter in only a champion name to be able to search so a table must exist that allows a champion name to be matched to an exact ID.
+INSERT INTO "league"."champname" VALUES
+    (226,'Aatrox'),
+    (103,'Ahri'),
+    (84,'Akali'),
+    (12,'Alistar'),
+    (32,'Amumu'),
+    (34,'Anivia'),
+    (1,'Annie'),
+    (22,'Ashe'),
+    (268,'Azir'),
+    (53,'Blitzcrank'),
+    (63,'Brand'),
+    (201,'Braum'),
+    (51,'Caitlyn'),
+    (69,'Cassiopeia'),
+    (31,'Cho''Gath'),
+    (42,'Corki'),
+    (122,'Darius'),
+    (131,'Diana'),
+    (36,'Dr. Mundo'),
+    (119,'Draven'),
+    (60,'Elise'),
+    (28,'Evelynn'),
+    (81,'Ezreal'),
+    (9,'Fiddlesticks'),
+    (114,'Fiora'),
+    (105,'Fizz'),
+    (3,'Galio'),
+    (41,'Gangplank'),
+    (86,'Garen'),
+    (150,'Gnar'),
+    (79,'Gragas'),
+    (104,'Graves'),
+    (120,'Hecarim'),
+    (74,'Heimerdinger'),
+    (39,'Irelia'),
+    (40,'Janna'),
+    (59,'Jarvan IV'),
+    (24,'Jax'),
+    (126,'Jayce'),
+    (222,'Jinx'),
+    (43,'Karma'),
+    (30,'Karthus'),
+    (38,'Kassadin'),
+    (55,'Katarina'),
+    (10,'Kayle'),
+    (85,'Kennen'),
+    (121,'Kha''Zix'),
+    (96,'Kog''Maw'),
+    (7,'LeBlanc'),
+    (64,'Lee Sin'),
+    (89,'Leona'),
+    (127,'Lissandra'),
+    (236,'Lucian'),
+    (117,'Lulu'),
+    (99,'Lux'),
+    (54,'Malphite'),
+    (90,'Malzahar'),
+    (57,'Maokai'),
+    (11,'Master Yi'),
+    (21,'Miss Fortune'),
+    (82,'Mordekaiser'),
+    (25,'Morgana'),
+    (267,'Nami'),
+    (75,'Nasus'),
+    (111,'Nautilus'),
+    (76,'Nidalee'),
+    (56,'Nocturne'),
+    (20,'Nunu'),
+    (2,'Olaf'),
+    (61,'Orianna'),
+    (80,'Pantheon'),
+    (78,'Poppy'),
+    (133,'Quinn'),
+    (33,'Rammus'),
+    (58,'Renekton'),
+    (107,'Rengar'),
+    (92,'Riven'),
+    (68,'Rumble'),
+    (13,'Ryze'),
+    (113,'Sejuani'),
+    (35,'Shaco'),
+    (98,'Shen'),
+    (102,'Shyvana'),
+    (27,'Singed'),
+    (14,'Sion'),
+    (15,'Sivir'),
+    (72,'Skarner'),
+    (37,'Sona'),
+    (16,'Soraka'),
+    (50,'Swain'),
+    (134,'Syndra'),
+    (91,'Talon'),
+    (44,'Taric'),
+    (17,'Teemo'),
+    (412,'Thresh'),
+    (18,'Tristana'),
+    (48,'Trundle'),
+    (23,'Tryndamere'),
+    (4,'Twisted Fate'),
+    (29,'Twitch'),
+    (77,'Udyr'),
+    (6,'Urgot'),
+    (110,'Varus'),
+    (67,'Vayne'),
+    (45,'Veigar'),
+    (161,'Vel''Koz'),
+    (254,'Vi'),
+    (112,'Viktor'),
+    (8,'Vladimir'),
+    (106,'Volibear'),
+    (19,'Warwick'),
+    (62,'Wukong'),
+    (101,'Xerath'),
+    (5,'Xin Zhao'),
+    (157,'Yasuo'),
+    (83,'Yorick'),
+    (154,'Zac'),
+    (238,'Zed'),
+    (115,'Ziggs'),
+    (26,'Zilean'),
+    (143,'Zyra')
+;

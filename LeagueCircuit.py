@@ -4,10 +4,12 @@ from os import path
 from flask import Flask, render_template, redirect, flash, session, escape, request
 from flask.ext.wtf import Form
 from wtforms import StringField, PasswordField
-#sys.path.append(path("C:/Aaron's/Classes/Data System Management/Riot-Watcher"))
-#from riotwatcher as Connecttoriot
+import riotwatcher
 app = Flask(__name__)
 app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
+key = '1dbf97cc-5028-4196-a05c-6645adc80bef'
+w = riotwatcher.RiotWatcher(key)
+print(w.can_make_request())
 
 @app.route('/')
 def index():
@@ -45,8 +47,7 @@ def sign_up():
         if err == 0:
             connect.cursor.execute("INSERT INTO LEAGUE.USER VALUES ('{0}','{1}','{2}')".format(mail, form.password.data.encode('ascii', 'ignore'), name))
             connect.conn.commit()
-            redirect('log-in')
-            return flash('Sign up successful!')
+            return redirect('log-in')
         else:
             return redirect('sign-up')
     return render_template("signup.html", form=form)
@@ -78,8 +79,11 @@ def log_in():
         if records:
             if records[0][1] == password:
                 sumname = records[0][2]
+                sumname = w.get_summoner(sumname)
+                print sumname
                 #valid session = true
                 session['username'] = value
+
                 print session['username']
                 return redirect('home')
         else:
@@ -95,7 +99,7 @@ def contact():
     return render_template("contact.html")
 
 class connect():
-    conn_string = "host='localhost' dbname='LEAGUE_CIRCUIT' user='postgres' password='RAMP'"
+    conn_string = "host='localhost' dbname='LEAGUE_CIRCUIT' user='postgres' password='testdb'"
     conn = psycopg2.connect(conn_string)
     cursor = conn.cursor()
 

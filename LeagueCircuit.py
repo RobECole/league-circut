@@ -10,9 +10,12 @@ app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 key = '1dbf97cc-5028-4196-a05c-6645adc80bef'
 w = riotwatcher.RiotWatcher(key)
 print(w.can_make_request())
-
 @app.route('/')
 def index():
+    try:
+        del session['username']
+    except:
+        pass
     return render_template("index.html")
 
 
@@ -56,8 +59,11 @@ def sign_up():
 @app.route('/home')
 def home():
     if 'username' in session:
+        print session
         return render_template("home.html")
-    return redirect("log-in"), flash('You are not logged in')
+    flash('You are not logged in')
+    return redirect("log-in")
+
 
 
 @app.route('/log-in', methods=['GET', 'POST'])
@@ -79,11 +85,41 @@ def log_in():
         if records:
             if records[0][1] == password:
                 sumname = records[0][2]
-                sumname = w.get_summoner(sumname)
-                print sumname
-                #valid session = true
+                summoner = w.get_summoner(sumname)
+                id = summoner.get('id')
+                try:
+                    match_history = w.get_match_history(id)
+                    match_id = match_history.get('matches')
+                    match_id = match_id[0].get('matchId')
+                except:
+                    print 'No match history found'
+                    match_id = 0
+                try:
+                    team = w.get_teams_for_summoner(id)
+                    team_id = team[1].get('fullId')
+                    teamstat = team[0].get('teamStatDetails')
+                    win5v5 = teamstat[0].get('wins')
+                    win3v3 = teamstat[1].get('wins')
+                except:
+                    print 'No team data found'
+                    team_id = 0
+                    win5v5 = 0
+                    win3v3 = 0
+                try:
+                    stat = w.get_stat_summary(id)
+                    unranked = stat.get('playerStatSummaries')
+                    for x in range(0, len(unranked)-1):
+                        k = unranked[x].get('playerStatSummaryType')
+                        if k == 'Unranked':
+                            unranked = unranked[x].get('wins')
+                            break
+                except:
+                    print 'No stats found'
+                    unranked = 0
+                level = summoner.get('summonerLevel')
+                connect.cursor.execute("INSERT INTO LEAGUE.PLAYER VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}')".format(id, sumname, level, match_id, team_id, unranked, win3v3, win5v5))
+                connect.conn.commit()
                 session['username'] = value
-
                 print session['username']
                 return redirect('home')
         else:
@@ -105,6 +141,7 @@ class connect():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 #if __name__ == "__main__":

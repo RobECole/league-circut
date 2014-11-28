@@ -61,6 +61,7 @@ def sign_up():
 def home():
     if 'username' in session:
         print session
+        #get the last game from web service
         return render_template("home.html")
     flash('You are not logged in')
     return redirect("log-in")
@@ -136,7 +137,7 @@ def contact():
     return render_template("contact.html")
 
 class connect():
-    conn_string = "host='localhost' dbname='LEAGUE_CIRCUIT' user='postgres' password='testdb'"
+    conn_string = "host='localhost' dbname='league_circuit' user='postgres' password='testdb'"
     conn = psycopg2.connect(conn_string)
     cursor = conn.cursor()
 

@@ -5,6 +5,7 @@ from flask import Flask, render_template, redirect, flash, session, escape, requ
 from flask.ext.wtf import Form
 from wtforms import StringField, PasswordField
 import riotwatcher
+import atexit
 app = Flask(__name__)
 app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 key = '1dbf97cc-5028-4196-a05c-6645adc80bef'
@@ -138,6 +139,11 @@ class connect():
     conn_string = "host='localhost' dbname='LEAGUE_CIRCUIT' user='postgres' password='testdb'"
     conn = psycopg2.connect(conn_string)
     cursor = conn.cursor()
+
+def exit_handler():
+    print "Application ending"
+
+atexit.register(exit_handler)
 
 if __name__ == '__main__':
     app.run(debug=True)

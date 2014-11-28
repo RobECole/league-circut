@@ -119,9 +119,69 @@ def log_in():
                     print 'No stats found'
                     unranked = 0
                 level = summoner.get('summonerLevel')
+                mId = '1612909742'
+                match = w.get_match(mId)
+                #print match
+                player = match.get('participants')
+
+                playerid = match.get('participantIdentities')
+                msumid = []
+                msumname = []
+                cid = []
+                tid = []
+                win = []
+                clevel = []
+                kills = []
+                deaths = []
+                assists = []
+                cs = []
+                goldearned = []
+                damagedealt = []
+                mType = match.get('queueType')
+                mDuration = match.get('matchDuration')
+                #print match
+                #print player
+                length = len(player)
+                print playerid
+                for x in range(0, length):
+                    playerids = playerid[x].get('player')
+                    if playerid:
+                        msumid.append(playerids.get('summonerId'))
+                        msumname.append(playerids.get('summonerName'))
+                        msumname[x] = msumname[x].encode('ascii', 'ignore')
+                    else:
+                        msumid.append(x+1)
+                        msumname.append(x+1)
+                    cid.append(player[x].get('championId'))
+                    tid.append(player[x].get('teamId'))
+                    pstats = player[x].get('stats')
+                    win.append(pstats.get('winner'))
+                    clevel.append(pstats.get('champLevel'))
+                    kills.append(pstats.get('kills'))
+                    deaths.append(pstats.get('deaths'))
+                    assists.append(pstats.get('assists'))
+                    cs.append(pstats.get('minionsKilled'))
+                    goldearned.append(pstats.get('goldEarned'))
+                    damagedealt.append(pstats.get('totalDamageDealtToChampions'))
+                for x in range(0, length):
+                    try:
+                        connect.cursor.execute("INSERT INTO LEAGUE.MATCH VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}')".format(msumid[x], mId, cid[x], tid[x], mType, win[x], mDuration))
+                        connect.conn.commit()
+                    except:
+                        connect.conn.rollback()
+                        connect.cursor.execute("UPDATE LEAGUE.MATCH SET champion_id = '{0}', team_id = '{1}', game_type = '{2}', winner = '{3}', duration = '{4}' WHERE match_id = '{5}' AND summoner_id = '{6}'".format(cid[x], tid[x], mType, win[x], mDuration, mId, msumid[x]))
+                        connect.conn.commit()
+                    try:
+                        connect.cursor.execute("INSERT INTO LEAGUE.MATCH_STATS VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}')".format(cid[x], clevel[x], kills[x], deaths[x], assists[x], cs[x], goldearned[x], damagedealt[x], mId, msumid[x]))
+                        connect.conn.commit()
+                    except:
+                        connect.conn.rollback()
+                        connect.cursor.execute("UPDATE LEAGUE.MATCH_STATS SET champion_id = '{0}', champlevel = '{1}', kills = '{2}', deaths = '{3}', assists = '{4}', creep_kills = '{5}', gold_earned = '{6}', damage_dealt_to_champs = '{7}' WHERE match_id = '{8}' AND summoner_id = '{9}'".format(cid[x], clevel[x], kills[x], deaths[x], assists[x], cs[x], goldearned[x], damagedealt[x], mId, msumid[x]))
+                        connect.conn.commit()
+
                 connect.cursor.execute("INSERT INTO LEAGUE.PLAYER VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}')".format(id, sumname, level, match_id, team_id, unranked, win3v3, win5v5))
                 connect.conn.commit()
-                session['username'] = value
+                session['username'] = sumname
                 print session['username']
                 return redirect('home')
         else:
@@ -137,7 +197,7 @@ def contact():
     return render_template("contact.html")
 
 class connect():
-    conn_string = "host='localhost' dbname='league_circuit' user='postgres' password='testdb'"
+    conn_string = "host='localhost' dbname='LEAGUE_CIRCUIT' user='postgres' password='testdb'"
     conn = psycopg2.connect(conn_string)
     cursor = conn.cursor()
 
@@ -154,3 +214,23 @@ if __name__ == '__main__':
 #if __name__ == "__main__":
 
 #    main()
+#How to fill Table Champion
+#champname = "insert champ name here"
+#try:
+    #champid = connect.cursor.execute("SELECT id FROM LEAGUE.CHAMPNAME WHERE name = champname")
+    #champion = w.get_champion(champid)
+    #rankedPlayEnable = champion.get('rankedPlayEnabled')
+    #botEnabled = champion.get('botEnabled')
+    #freeToPlay = champion.get('freeToPlay')
+#except:
+    #print "Invalid champion id"
+
+#How to fill Table Match
+#match = w.get_match('1647417800')
+#get sumid sumid = match.get
+#get matchid
+#get champid
+#get teamid
+#get gametype
+#get winner
+#get length

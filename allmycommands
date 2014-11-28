@@ -141,7 +141,7 @@ ALTER TABLE "league"."team"
 CREATE TABLE "league"."user"(
 username text,
 pw text,
-sum_name text)
+sum_name text);
 
 INSERT INTO "league"."player" VALUES
 	(48445998,'Magicalhorseman',11,0,'UNRANKED',0,25,0,0),
@@ -227,7 +227,7 @@ INSERT INTO "league"."match_stats" VALUES
 
 --RIOT api only allows for search of champions by champion ID, therefore it is essential for the user to be able to enter in only a champion name to be able to search so a table must exist that allows a champion name to be matched to an exact ID.
 INSERT INTO "league"."champname" VALUES
-    (226,'Aatrox'),
+    (266,'Aatrox'),
     (103,'Ahri'),
     (84,'Akali'),
     (12,'Alistar'),

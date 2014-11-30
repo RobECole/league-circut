@@ -40,7 +40,7 @@
             <div class="col-lg-9">
             <div class="panel panel-primary">
                   <div class="panel-heading">
-                        <h3 class="panel-title">View 2</h3>
+                        <h3 class="panel-title">Top Killer</h3>
                   </div>
                   <div class="panel-body">
                       <div class="bs-component"></div>
@@ -53,11 +53,11 @@
                               </tr>
                           </thead>
                           <tbody>
-                          {% for row in data %}
+                          {% for row in top %}
                             <tr>
-                                <td>{{ row.name }}</td>
-                                <td>{{ row.name }}</td>
-                                <td>{{ row.name }}</td>
+                                <td>{{ row.sumname }}</td>
+                                <td>{{ row.champname }}</td>
+                                <td>{{ row.kills }}</td>
                             </tr>
                             {% endfor %}
                           </tbody>

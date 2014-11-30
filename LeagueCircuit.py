@@ -71,9 +71,10 @@ def home():
     #if 'username' in session:
     #connect.cursor.execute("SELECT summoner_id, game_id FROM LEAGUE.PLAYER WHERE summoner_name = '{0}'".format(session['username']))
     #passing = connect.cursor.fetchall()
+    topkills = requests.get(app.service + 'topkills/' + str(match_id)).json()['top']
     lastgame = requests.get(app.service + 'lastGame/' + str(id)).json()['last']
     freechamps = requests.get(app.service + 'freeChamps').json()['data']
-    return render_template("home.html", summoner=session['username'], data=freechamps, last=lastgame)
+    return render_template("home.html", summoner=session['username'], data=freechamps, last=lastgame, top=topkills)
 
 
 
@@ -93,6 +94,7 @@ def log_in():
         connect.cursor.execute("SELECT * FROM LEAGUE.USER WHERE username = '{0}'" .format(value))
         records = connect.cursor.fetchall()
         password = form.password.data.encode('ascii', 'ignore')
+        #champupdate()
         if records:
             print "loginpart1"
             if records[0][2] == password:
@@ -100,6 +102,7 @@ def log_in():
                 sumname = records[0][1]
                 summoner = w.get_summoner(sumname)
                 global id
+                global match_id
                 id = summoner['id']
                 try:
                     match_history = w.get_recent_games(id)
@@ -180,7 +183,7 @@ def log_in():
                     playerid = match.get('participantIdentities')
                     mType = match.get('queueType')
                     mDuration = match.get('matchDuration')
-                    mDuration = "{0}:{1}".format(mDuration / 60, mDuration % 60)
+                    #mDuration = "{0}:{1}".format(mDuration / 60, mDuration % 60)
                     length = len(player)
                     for x in xrange(length):
                         playerids = playerid[x].get('player')
@@ -239,10 +242,33 @@ def about():
 def contact():
     return render_template("contact.html")
 
+
+
+
 class connect():
     conn_string = "host='localhost' dbname='LEAGUE_CIRCUIT' user='postgres' password='testdb'"
     conn = psycopg2.connect(conn_string)
     cursor = conn.cursor()
+
+class champupdate():
+    champions = w.get_all_champions()
+    champions = champions.get('champions')
+    c1 = []
+    c2 = []
+    c3 = []
+    c4 = []
+    print "working"
+    print len(champions)
+    for x in xrange(len(champions)):
+        c = champions[x]
+        c1.append(c.get('id'))
+        c2.append(c.get('rankedPlayEnabled'))
+        c3.append(c.get('botEnabled'))
+        c4.append(c.get('freeToPlay'))
+        connect.cursor.execute("UPDATE LEAGUE.CHAMPION SET ranked_play_enabled = '{0}', bot_enabled = '{1}', free_to_play = '{2}' WHERE champ_id = '{3}'".format(c2[x], c3[x], c4[x], c1[x]))
+        if connect.cursor.rowcount == 0:
+            connect.cursor.execute("INSERT INTO LEAGUE.CHAMPION VALUES ('{0}','{1}','{2}','{3}')".format(c1[x], c2[x], c3[x], c4[x]))
+    print "done"
 
 def exit_handler():
     print "Application ending"

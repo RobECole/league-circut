@@ -66,8 +66,7 @@ def home():
 
 
    free = requests.get(FlaskService + 'freeChamps').json()
-   print free
-   return render_template("home.html")
+   return render_template("home.html", data=free)
 
 
 @app.route('/log-in', methods=['GET', 'POST'])
@@ -171,10 +170,10 @@ def log_in():
                     if connect.cursor.rowcount == 0:
                         connect.cursor.execute("INSERT INTO LEAGUE.MATCH_STATS VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}')".format(cid[x], clevel[x], kills[x], deaths[x], assists[x], cs[x], goldearned[x], damagedealt[x], mId, msumid[x]))
 
-                    connect.cursor.execute("UPDATE LEAGUE.PLAYER SET summoner_id = '{0}', player_level = '{1}', recent_games_id = '{2}', team_id = '{3}', unranked_win = '{4}', ranked_win3v3 = '{5}', ranked_win5v5 = '{6}' WHERE summoner_name = '{7}'".format(id, level, match_id, team_id, unranked, win3v3, win5v5, sumname))
-                    if connect.cursor.rowcount == 0:
-                        connect.cursor.execute("INSERT INTO LEAGUE.PLAYER VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}')".format(id, sumname, level, match_id, team_id, unranked, win3v3, win5v5))
-                    connect.conn.commit()
+                connect.cursor.execute("UPDATE LEAGUE.PLAYER SET summoner_id = '{0}', player_level = '{1}', recent_games_id = '{2}', team_id = '{3}', unranked_win = '{4}', ranked_win3v3 = '{5}', ranked_win5v5 = '{6}' WHERE summoner_name = '{7}'".format(id, level, match_id, team_id, unranked, win3v3, win5v5, sumname))
+                if connect.cursor.rowcount == 0:
+                    connect.cursor.execute("INSERT INTO LEAGUE.PLAYER VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}')".format(id, sumname, level, match_id, team_id, unranked, win3v3, win5v5))
+                connect.conn.commit()
 
 
                 session['username'] = sumname

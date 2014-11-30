@@ -27,6 +27,15 @@
                         </div>
                      </div>
                 </fieldset>
+                {% with logins = get_flashed_messages(category_filter=["login"]) %}
+                {% if logins %}
+                <ul class=flashes>
+                {% for message in logins %}
+                <li>{{ message }}</li>
+                {% endfor %}
+                </ul>
+                {% endif %}
+                {% endwith %}
             </form>
          </div>
     </div>

@@ -11,6 +11,7 @@ app = Flask(__name__)
 app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 key = '1dbf97cc-5028-4196-a05c-6645adc80bef'
 w = riotwatcher.RiotWatcher(key)
+FlaskService = 'http://127.0.0.1:5001/api/'
 
 
 @app.route('/')
@@ -63,9 +64,9 @@ def sign_up():
 def home():
    #if 'username' in session:
 
-   chamsurl = 'http://127.0.0.1:5001/api/freeChamps'
-   r = requests.get(chamsurl).json()
-   print r
+
+   free = requests.get(FlaskService + 'freeChamps').json()
+   print free
    return render_template("home.html")
 
 

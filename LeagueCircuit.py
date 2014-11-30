@@ -34,26 +34,22 @@ def sign_up():
         summoner_name = StringField()
     form = SignUpForm()
     if form.validate_on_submit():
-        err = False
         mail = form.email.data.encode('ascii', 'ignore').lower()
         name = form.summoner_name.data.encode('ascii', 'ignore').lower()
-        try:
-            w.get_summoner(name)
-        except:
-            flash("Invalid summoner name.  Please enter a valid summoner name.", 'signup')
         connect.cursor.execute("SELECT username FROM LEAGUE.USER WHERE username = '{0}'".format(mail))
+        err = False
         if connect.cursor.fetchall():
-            flash('User id already taken.', 'signup')
+            flash('User id already taken.')
             err = True
             #return redirect('sign-up')
             #need to put error message
         connect.cursor.execute("SELECT sum_name FROM LEAGUE.USER WHERE sum_name = '{0}'".format(name))
         if connect.cursor.fetchall():
-            flash('Summoner name already registered.', 'signup')
+            flash('Summoner name already registered.')
             err = True
             #return redirect('sign-up')
         if form.password.data.encode('ascii', 'ignore') != form.confirm.data.encode('ascii', 'ignore'):
-            flash('Passwords do not match.', 'signup')
+            flash('Passwords do not match.')
             err = True
         if not err:
             connect.cursor.execute("INSERT INTO LEAGUE.USER VALUES ('{0}','{1}','{2}')".format(mail, form.password.data.encode('ascii', 'ignore'), name))
@@ -64,7 +60,7 @@ def sign_up():
     return render_template("signup.html", form=form)
 
 
-@app.route('/home', methods=['GET', 'POST'])
+@app.route('/home', methods=['GET','POST'])
 def home():
    #if 'username' in session:
 
@@ -104,13 +100,13 @@ def log_in():
                     match_id = 0
                 try:
                     team = w.get_teams_for_summoner(id)
-                    teamid = team[1].get('fullId')
+                    team_id = team[1].get('fullId')
                     teamstat = team[0].get('teamStatDetails')
                     win5v5 = teamstat[0].get('wins')
                     win3v3 = teamstat[1].get('wins')
                 except:
                     print 'No team data found'
-                    teamid = 0
+                    team_id = 0
                     win5v5 = 0
                     win3v3 = 0
                 try:
@@ -141,7 +137,6 @@ def log_in():
                 deaths = []
                 assists = []
                 cs = []
-                partid = []
                 goldearned = []
                 damagedealt = []
                 mType = match.get('queueType')
@@ -158,7 +153,6 @@ def log_in():
                         msumname.append(x+1)
                     cid.append(player[x].get('championId'))
                     tid.append(player[x].get('teamId'))
-                    partid.append(player[x].get('participantId'))
                     pstats = player[x].get('stats')
                     win.append(pstats.get('winner'))
                     clevel.append(pstats.get('champLevel'))
@@ -169,26 +163,24 @@ def log_in():
                     goldearned.append(pstats.get('goldEarned'))
                     damagedealt.append(pstats.get('totalDamageDealtToChampions'))
                 for x in xrange(length):
-                    connect.cursor.execute("UPDATE LEAGUE.MATCH SET champion_id = '{0}', participant_id = '{1}', team_id = '{2}', game_type = '{3}', winner = '{4}', duration = '{5}' WHERE match_id = '{6}' AND summoner_id = '{7}'".format(cid[x], partid[x], tid[x], mType, win[x], mDuration, mId, msumid[x]))
+                    connect.cursor.execute("UPDATE LEAGUE.MATCH SET champion_id = '{0}', team_id = '{1}', game_type = '{2}', winner = '{3}', duration = '{4}' WHERE match_id = '{5}' AND summoner_id = '{6}'".format(cid[x], tid[x], mType, win[x], mDuration, mId, msumid[x]))
                     if connect.cursor.rowcount == 0:
-                        connect.cursor.execute("INSERT INTO LEAGUE.MATCH VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}', '{7}')".format(msumid[x], mId, cid[x], partid[x], tid[x], mType, win[x], mDuration))
+                        connect.cursor.execute("INSERT INTO LEAGUE.MATCH VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}')".format(msumid[x], mId, cid[x], tid[x], mType, win[x], mDuration))
 
-                    connect.cursor.execute("UPDATE LEAGUE.MATCH_STATS SET champion_id = '{0}', champlevel = '{1}', kills = '{2}', deaths = '{3}', assists = '{4}', creep_kills = '{5}', gold_earned = '{6}', damage_dealt_to_champs = '{7}' WHERE match_id = '{8}' AND participant_id = '{9}'".format(cid[x], clevel[x], kills[x], deaths[x], assists[x], cs[x], goldearned[x], damagedealt[x], mId, partid[x]))
+                    connect.cursor.execute("UPDATE LEAGUE.MATCH_STATS SET champion_id = '{0}', champlevel = '{1}', kills = '{2}', deaths = '{3}', assists = '{4}', creep_kills = '{5}', gold_earned = '{6}', damage_dealt_to_champs = '{7}' WHERE match_id = '{8}' AND summoner_id = '{9}'".format(cid[x], clevel[x], kills[x], deaths[x], assists[x], cs[x], goldearned[x], damagedealt[x], mId, msumid[x]))
                     if connect.cursor.rowcount == 0:
-                        connect.cursor.execute("INSERT INTO LEAGUE.MATCH_STATS VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}')".format(mId, partid[x], cid[x], clevel[x], kills[x], deaths[x], assists[x], cs[x], goldearned[x], damagedealt[x]))
+                        connect.cursor.execute("INSERT INTO LEAGUE.MATCH_STATS VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}')".format(cid[x], clevel[x], kills[x], deaths[x], assists[x], cs[x], goldearned[x], damagedealt[x], mId, msumid[x]))
 
-                connect.cursor.execute("UPDATE LEAGUE.PLAYER SET summoner_id = '{0}', player_level = '{1}', game_id = '{2}', team_id = '{3}', unranked_win = '{4}', ranked_win3v3 = '{5}', ranked_win5v5 = '{6}' WHERE summoner_name = '{7}'".format(id, level, match_id, teamid, unranked, win3v3, win5v5, sumname))
-                if connect.cursor.rowcount == 0:
-                        connect.cursor.execute("INSERT INTO LEAGUE.PLAYER VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}')".format(id, sumname, level, match_id, teamid, unranked, win3v3, win5v5))
-                connect.conn.commit()
+                    connect.cursor.execute("UPDATE LEAGUE.PLAYER SET summoner_id = '{0}', player_level = '{1}', recent_games_id = '{2}', team_id = '{3}', unranked_win = '{4}', ranked_win3v3 = '{5}', ranked_win5v5 = '{6}' WHERE summoner_name = '{7}'".format(id, level, match_id, team_id, unranked, win3v3, win5v5, sumname))
+                    if connect.cursor.rowcount == 0:
+                        connect.cursor.execute("INSERT INTO LEAGUE.PLAYER VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}')".format(id, sumname, level, match_id, team_id, unranked, win3v3, win5v5))
+                    connect.conn.commit()
 
 
                 session['username'] = sumname
                 return redirect('home')
         else:
-            flash("Incorrect username/password.", 'login')
             return render_template("login.html", form=form)
-    flash("Incorrect username/password.", 'login')
     return render_template("login.html", form=form)
 
 @app.route('/about')

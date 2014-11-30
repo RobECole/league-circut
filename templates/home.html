@@ -100,27 +100,11 @@
                     <div class="panel-body">
                         <table class="table table-striped table-hover">
                             <tbody>
+                            {% for row in data %}
                             <tr>
-                                <td>{{ r }}</td>
+                                <td>{{ row.name }}</td>
                             </tr>
-                            <tr>
-                                <td>Corki</td>
-                            </tr>
-                            <tr>
-                                <td>Corki</td>
-                            </tr>
-                            <tr>
-                                <td>Corki</td>
-                            </tr>
-                            <tr>
-                                <td>Corki</td>
-                            </tr>
-                            <tr>
-                                <td>Corki</td>
-                            </tr>
-                            <tr>
-                                <td>Corki</td>
-                            </tr>
+                            {% endfor %}
                             </tbody>
                         </table>
                     </div>

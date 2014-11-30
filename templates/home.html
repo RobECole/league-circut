@@ -26,66 +26,15 @@
                               </tr>
                           </thead>
                           <tbody>
-                              <tr>
-                                  <td>Corki</td>
-                                  <td>Var 1 a</td>
-                                  <td>Var 1 b</td>
-                                  <td>Var 1 b</td>
-                              </tr>
-                              <tr>
-                                  <td>Amumu</td>
-                                  <td>Var 1 a</td>
-                                  <td>Var 1 b</td>
-                                  <td>Var 1 b</td>
-                              </tr>
-                              <tr>
-                                  <td>Darius</td>
-                                  <td>Var 1 a</td>
-                                  <td>Var 1 b</td>
-                                  <td>Var 1 b</td>
-                              </tr>
-                              <tr class="success">
-                                  <td>{{ session['username'] }}</td>
-                                  <td>Var 2 a</td>
-                                  <td>Var 2 b</td>
-                                  <td>Var 1 b</td>
-                              </tr>
-                              <tr>
-                                  <td>Casiopa</td>
-                                  <td>Var 1 a</td>
-                                  <td>Var 1 b</td>
-                                  <td>Var 1 b</td>
-                              </tr>
-                              <tr>
-                                  <td>sniper</td>
-                                  <td>Var 3 a</td>
-                                  <td>Var 3 b</td>
-                                  <td>Var 1 b</td>
-                              </tr>
-                              <tr>
-                                  <td>Axe</td>
-                                  <td>Var 3 a</td>
-                                  <td>Var 3 b</td>
-                                  <td>Var 1 b</td>
-                              </tr>
-                              <tr>
-                                  <td>Whisp</td>
-                                  <td>Var 3 a</td>
-                                  <td>Var 3 b</td>
-                                  <td>Var 1 b</td>
-                              </tr>
-                              <tr>
-                                  <td>OgreMagi</td>
-                                  <td>Var 3 a</td>
-                                  <td>Var 3 b</td>
-                                  <td>Var 1 b</td>
-                              </tr>
-                              <tr>
-                                  <td>BatRider</td>
-                                  <td>Var 3 a</td>
-                                  <td>Var 3 b</td>
-                                  <td>Var 1 b</td>
-                              </tr>
+                          {% for row in data %}
+                            <tr>
+                                <td>{{ row.name }}</td>
+                                <td>{{ row.name }}</td>
+                                <td>{{ row.name }}</td>
+                                <td>{{ row.name }}</td>
+                            </tr>
+                            {% endfor %}
+
 
                           </tbody>
                       </table>

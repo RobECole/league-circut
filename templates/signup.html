@@ -43,7 +43,7 @@
                         </div>
                      </div>
                 </fieldset>
-                {% with signups = get_flashed_messages(category_filter=["signin"]) %}
+                {% with signups = get_flashed_messages(category_filter=["signup"]) %}
                 {% if signups %}
                 <ul class=flashes>
                 {% for message in signups %}

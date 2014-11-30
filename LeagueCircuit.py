@@ -33,11 +33,16 @@ def sign_up():
         mail = mail.lower()
         name = form.summoner_name.data.encode('ascii', 'ignore')
         name = name.lower()
-        connect.cursor.execute("SELECT username FROM LEAGUE.USER WHERE username = '{0}'".format(mail))
         err = 0
+        try:
+            w.get_summoner(name)
+        except:
+            flash("Invalid summoner name.  Please enter a valid summoner name", 'signup')
+            err = 1
+        connect.cursor.execute("SELECT username FROM LEAGUE.USER WHERE username = '{0}'".format(mail))
+
         if connect.cursor.fetchall():
-            flash('User id already taken.')
-            flash('poopopp', 'pop')
+            flash('User id already taken.', 'signup')
             err = 1
             #return redirect('sign-up')
             #need to put error message
@@ -47,6 +52,7 @@ def sign_up():
             err = 1
             #return redirect('sign-up')
         if form.password.data.encode('ascii', 'ignore') != form.confirm.data.encode('ascii', 'ignore'):
+            flash('Passwords do not match.', 'signup')
             err = 1
         if err == 0:
             connect.cursor.execute("INSERT INTO LEAGUE.USER VALUES ('{0}','{1}','{2}')".format(mail, form.password.data.encode('ascii', 'ignore'), name))

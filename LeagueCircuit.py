@@ -74,7 +74,8 @@ def home():
     topkills = requests.get(app.service + 'topkills/' + str(match_id)).json()['top']
     lastgame = requests.get(app.service + 'lastGame/' + str(id)).json()['last']
     freechamps = requests.get(app.service + 'freeChamps').json()['data']
-    return render_template("home.html", summoner=session['username'], data=freechamps, last=lastgame, top=topkills)
+    fastgame = requests.get(app.service + 'fastgame/' + str(id)).json()['fast']
+    return render_template("home.html", summoner=session['username'], data=freechamps, last=lastgame, top=topkills, fast=fastgame)
 
 
 
@@ -104,6 +105,8 @@ def log_in():
                 global id
                 global match_id
                 id = summoner['id']
+                newid = id
+                print id
                 try:
                     match_history = w.get_recent_games(id)
                     match_history = match_history.get('games')
@@ -179,6 +182,14 @@ def log_in():
                 goldearned = []
                 damagedealt = []
                 if match_found == True:
+                    for x in xrange(len(match_history)):
+                        print len(match_history)
+                        mId = match_history[x].get('gameId')
+                        mDuration = match_history[x].get('stats').get('timePlayed')
+                        connect.cursor.execute("UPDATE LEAGUE.MATCH SET duration = '{0}' WHERE match_id = '{1}' AND summoner_id = '{2}'".format(mDuration, mId, id))
+                        if connect.cursor.rowcount == 0:
+                            connect.cursor.execute("INSERT INTO LEAGUE.MATCH VALUES ('{0}','{1}',0,0,0,0,True, '{2}')".format(id, mId, mDuration))
+                    mId = match_id
                     player = match.get('participants')
                     playerid = match.get('participantIdentities')
                     mType = match.get('queueType')
@@ -257,8 +268,6 @@ class champupdate():
     c2 = []
     c3 = []
     c4 = []
-    print "working"
-    print len(champions)
     for x in xrange(len(champions)):
         c = champions[x]
         c1.append(c.get('id'))
@@ -268,7 +277,10 @@ class champupdate():
         connect.cursor.execute("UPDATE LEAGUE.CHAMPION SET ranked_play_enabled = '{0}', bot_enabled = '{1}', free_to_play = '{2}' WHERE champ_id = '{3}'".format(c2[x], c3[x], c4[x], c1[x]))
         if connect.cursor.rowcount == 0:
             connect.cursor.execute("INSERT INTO LEAGUE.CHAMPION VALUES ('{0}','{1}','{2}','{3}')".format(c1[x], c2[x], c3[x], c4[x]))
-    print "done"
+    connect.conn.commit()
+
+
+
 
 def exit_handler():
     print "Application ending"

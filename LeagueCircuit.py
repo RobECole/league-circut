@@ -70,8 +70,8 @@ def sign_up():
 @app.route('/home', methods=['GET', 'POST'])
 def home():
    #if 'username' in session:
-   connect.cursor.execute("SELECT summoner_id, game_id FROM LEAGUE.PLAYER WHERE summoner_name = '{0}'".format(session['username']))
-   passing = connect.cursor.fetchall()
+   #connect.cursor.execute("SELECT summoner_id, game_id FROM LEAGUE.PLAYER WHERE summoner_name = '{0}'".format(session['username']))
+   #passing = connect.cursor.fetchall()
    #lastgame = requests.get(app.service + '/' + 'lastGame').json()['last']
    freechamps = requests.get(app.service + '/' + 'freeChamps').json()['data']
    #print lastgame
@@ -102,10 +102,11 @@ def log_in():
                 sumname = records[0][1]
                 summoner = w.get_summoner(sumname)
                 id = summoner['id']
-                print id
                 try:
                     match_history = w.get_recent_games(id)
                     match_history = match_history.get('games')
+                    checkteam =  match_history[0].get('stats').get('team')
+                    checkchamp = match_history[0].get('championId')
                     for x in range(0, len(match_history)):
                         match_id = match_history[x].get('gameId')
                         connect.cursor.execute("UPDATE LEAGUE.MATCHLIST SET sumid = '{0}' WHERE id = '{1}'".format(id, match_id))
@@ -193,6 +194,9 @@ def log_in():
                             msumname.append(x+1)
                         cid.append(player[x].get('championId'))
                         tid.append(player[x].get('teamId'))
+                        if cid[x] == checkchamp and tid[x] == checkteam:
+                            msumid[x] = id
+                            msumname[x] = sumname
                         partid.append(player[x].get('participantId'))
                         pstats = player[x].get('stats')
                         win.append(pstats.get('winner'))

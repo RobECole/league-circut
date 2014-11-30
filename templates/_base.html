@@ -49,7 +49,11 @@
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav navbar-right">
                     <li>
-                        <a href="{{ url_for('log_in') }}"><i class="fa fa-sign-in fa-fw"></i> Log-In</a>
+                        {% if not 'username' in session %}
+                            <a href="{{ url_for('log_in') }}"><i class="fa fa-sign-in fa-fw"></i> Log-In</a>
+                        {% else %}
+                            <a href="{{ url_for('sign_out') }}"><i class="fa fa-sign-in fa-fw"></i> {{ session['username'] }}</a>
+                        {% endif %}
                     </li>
                     <li>
                         <a href="{{ url_for('about') }}">About</a>

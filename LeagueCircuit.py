@@ -1,24 +1,28 @@
 import psycopg2
-import sys
-from os import path
-from flask import Flask, render_template, redirect, flash, session, escape, request
+from flask import Flask, render_template, redirect, flash, session
+import requests
 from flask.ext.wtf import Form
 from wtforms import StringField, PasswordField
 import riotwatcher
 import atexit
+
+
 app = Flask(__name__)
 app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 key = '1dbf97cc-5028-4196-a05c-6645adc80bef'
 w = riotwatcher.RiotWatcher(key)
-print(w.can_make_request())
+
+
 @app.route('/')
 def index():
-    try:
-        del session['username']
-    except:
-        pass
     return render_template("index.html")
 
+
+@app.route('/sign-out')
+def sign_out():
+    if 'username' in session:
+        del session['username']
+    return redirect('/')
 
 @app.route('/sign-up', methods=['GET', 'POST'])
 def sign_up():
@@ -29,26 +33,24 @@ def sign_up():
         summoner_name = StringField()
     form = SignUpForm()
     if form.validate_on_submit():
-        mail = form.email.data.encode('ascii', 'ignore')
-        mail = mail.lower()
-        name = form.summoner_name.data.encode('ascii', 'ignore')
-        name = name.lower()
+        mail = form.email.data.encode('ascii', 'ignore').lower()
+        name = form.summoner_name.data.encode('ascii', 'ignore').lower()
         connect.cursor.execute("SELECT username FROM LEAGUE.USER WHERE username = '{0}'".format(mail))
-        err = 0
+        err = False
         if connect.cursor.fetchall():
             flash('User id already taken.')
-            err = 1
+            err = True
             #return redirect('sign-up')
             #need to put error message
         connect.cursor.execute("SELECT sum_name FROM LEAGUE.USER WHERE sum_name = '{0}'".format(name))
         if connect.cursor.fetchall():
             flash('Summoner name already registered.')
-            err = 1
+            err = True
             #return redirect('sign-up')
         if form.password.data.encode('ascii', 'ignore') != form.confirm.data.encode('ascii', 'ignore'):
             flash('Passwords do not match.')
-            err = 1
-        if err == 0:
+            err = True
+        if not err:
             connect.cursor.execute("INSERT INTO LEAGUE.USER VALUES ('{0}','{1}','{2}')".format(mail, form.password.data.encode('ascii', 'ignore'), name))
             connect.conn.commit()
             return redirect('log-in')
@@ -57,15 +59,14 @@ def sign_up():
     return render_template("signup.html", form=form)
 
 
-@app.route('/home')
+@app.route('/home', methods=['GET','POST'])
 def home():
-    if 'username' in session:
-        print session
-        #get the last game from web service
-        return render_template("home.html")
-    flash('You are not logged in')
-    return redirect("log-in")
+   #if 'username' in session:
 
+   chamsurl = 'http://127.0.0.1:5001/api/freeChamps'
+   r = requests.get(chamsurl).json()
+   print r
+   return render_template("home.html")
 
 
 @app.route('/log-in', methods=['GET', 'POST'])
@@ -88,7 +89,7 @@ def log_in():
             if records[0][1] == password:
                 sumname = records[0][2]
                 summoner = w.get_summoner(sumname)
-                id = summoner.get('id')
+                id = summoner['id']
                 try:
                     match_history = w.get_match_history(id)
                     match_id = match_history.get('matches')
@@ -139,11 +140,8 @@ def log_in():
                 damagedealt = []
                 mType = match.get('queueType')
                 mDuration = match.get('matchDuration')
-                #print match
-                #print player
                 length = len(player)
-                print playerid
-                for x in range(0, length):
+                for x in xrange(length):
                     playerids = playerid[x].get('player')
                     if playerid:
                         msumid.append(playerids.get('summonerId'))
@@ -163,26 +161,22 @@ def log_in():
                     cs.append(pstats.get('minionsKilled'))
                     goldearned.append(pstats.get('goldEarned'))
                     damagedealt.append(pstats.get('totalDamageDealtToChampions'))
-                for x in range(0, length):
-                    try:
+                for x in xrange(length):
+                    connect.cursor.execute("UPDATE LEAGUE.MATCH SET champion_id = '{0}', team_id = '{1}', game_type = '{2}', winner = '{3}', duration = '{4}' WHERE match_id = '{5}' AND summoner_id = '{6}'".format(cid[x], tid[x], mType, win[x], mDuration, mId, msumid[x]))
+                    if connect.cursor.rowcount == 0:
                         connect.cursor.execute("INSERT INTO LEAGUE.MATCH VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}')".format(msumid[x], mId, cid[x], tid[x], mType, win[x], mDuration))
-                        connect.conn.commit()
-                    except:
-                        connect.conn.rollback()
-                        connect.cursor.execute("UPDATE LEAGUE.MATCH SET champion_id = '{0}', team_id = '{1}', game_type = '{2}', winner = '{3}', duration = '{4}' WHERE match_id = '{5}' AND summoner_id = '{6}'".format(cid[x], tid[x], mType, win[x], mDuration, mId, msumid[x]))
-                        connect.conn.commit()
-                    try:
-                        connect.cursor.execute("INSERT INTO LEAGUE.MATCH_STATS VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}')".format(cid[x], clevel[x], kills[x], deaths[x], assists[x], cs[x], goldearned[x], damagedealt[x], mId, msumid[x]))
-                        connect.conn.commit()
-                    except:
-                        connect.conn.rollback()
-                        connect.cursor.execute("UPDATE LEAGUE.MATCH_STATS SET champion_id = '{0}', champlevel = '{1}', kills = '{2}', deaths = '{3}', assists = '{4}', creep_kills = '{5}', gold_earned = '{6}', damage_dealt_to_champs = '{7}' WHERE match_id = '{8}' AND summoner_id = '{9}'".format(cid[x], clevel[x], kills[x], deaths[x], assists[x], cs[x], goldearned[x], damagedealt[x], mId, msumid[x]))
-                        connect.conn.commit()
 
-                connect.cursor.execute("INSERT INTO LEAGUE.PLAYER VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}')".format(id, sumname, level, match_id, team_id, unranked, win3v3, win5v5))
-                connect.conn.commit()
+                    connect.cursor.execute("UPDATE LEAGUE.MATCH_STATS SET champion_id = '{0}', champlevel = '{1}', kills = '{2}', deaths = '{3}', assists = '{4}', creep_kills = '{5}', gold_earned = '{6}', damage_dealt_to_champs = '{7}' WHERE match_id = '{8}' AND summoner_id = '{9}'".format(cid[x], clevel[x], kills[x], deaths[x], assists[x], cs[x], goldearned[x], damagedealt[x], mId, msumid[x]))
+                    if connect.cursor.rowcount == 0:
+                        connect.cursor.execute("INSERT INTO LEAGUE.MATCH_STATS VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}')".format(cid[x], clevel[x], kills[x], deaths[x], assists[x], cs[x], goldearned[x], damagedealt[x], mId, msumid[x]))
+
+                    connect.cursor.execute("UPDATE LEAGUE.PLAYER SET summoner_id = '{0}', player_level = '{1}', recent_games_id = '{2}', team_id = '{3}', unranked_win = '{4}', ranked_win3v3 = '{5}', ranked_win5v5 = '{6}' WHERE summoner_name = '{7}'".format(id, level, match_id, team_id, unranked, win3v3, win5v5, sumname))
+                    if connect.cursor.rowcount == 0:
+                        connect.cursor.execute("INSERT INTO LEAGUE.PLAYER VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}')".format(id, sumname, level, match_id, team_id, unranked, win3v3, win5v5))
+                    connect.conn.commit()
+
+
                 session['username'] = sumname
-                print session['username']
                 return redirect('home')
         else:
             return render_template("login.html", form=form)

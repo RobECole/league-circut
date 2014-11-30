@@ -62,10 +62,7 @@ def sign_up():
 
 @app.route('/home', methods=['GET','POST'])
 def home():
-   #if 'username' in session:
-
-
-   free = requests.get(FlaskService + 'freeChamps').json()
+   free = requests.get(FlaskService + 'freeChamps').json()['data']
    return render_template("home.html", data=free)
 
 

@@ -9,10 +9,9 @@ import atexit
 
 app = Flask(__name__)
 app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
-app.service = 'http://127.0.0.1:5001/api'
+app.service = 'http://127.0.0.1:5001/api/'
 key = '1dbf97cc-5028-4196-a05c-6645adc80bef'
 w = riotwatcher.RiotWatcher(key)
-FlaskService = 'http://127.0.0.1:5001/api/'
 
 
 @app.route('/')
@@ -69,13 +68,12 @@ def sign_up():
 
 @app.route('/home', methods=['GET', 'POST'])
 def home():
-   #if 'username' in session:
-   #connect.cursor.execute("SELECT summoner_id, game_id FROM LEAGUE.PLAYER WHERE summoner_name = '{0}'".format(session['username']))
-   #passing = connect.cursor.fetchall()
-   #lastgame = requests.get(app.service + '/' + 'lastGame').json()['last']
-   freechamps = requests.get(app.service + '/' + 'freeChamps').json()['data']
-   #print lastgame
-   return render_template("home.html", summoner=session['username'], data=freechamps)
+    #if 'username' in session:
+    #connect.cursor.execute("SELECT summoner_id, game_id FROM LEAGUE.PLAYER WHERE summoner_name = '{0}'".format(session['username']))
+    #passing = connect.cursor.fetchall()
+    lastgame = requests.get(app.service + 'lastGame/' + str(id)).json()['last']
+    freechamps = requests.get(app.service + 'freeChamps').json()['data']
+    return render_template("home.html", summoner=session['username'], data=freechamps, last=lastgame)
 
 
 
@@ -101,6 +99,7 @@ def log_in():
                 print "loginpart2"
                 sumname = records[0][1]
                 summoner = w.get_summoner(sumname)
+                global id
                 id = summoner['id']
                 try:
                     match_history = w.get_recent_games(id)

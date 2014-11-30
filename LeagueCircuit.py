@@ -39,6 +39,7 @@ def sign_up():
         name = form.summoner_name.data.encode('ascii', 'ignore').lower()
         connect.cursor.execute("SELECT username FROM LEAGUE.USER WHERE username = '{0}'".format(mail))
         err = False
+        #print
         try:
             w.get_summoner(name)
         except:

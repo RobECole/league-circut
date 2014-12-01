@@ -74,8 +74,9 @@ def home():
     topkills = requests.get(app.service + 'topkills/' + str(match_id)).json()['top']
     lastgame = requests.get(app.service + 'lastGame/' + str(id)).json()['last']
     freechamps = requests.get(app.service + 'freeChamps').json()['data']
-    fastgame = requests.get(app.service + 'fastgame/' + str(id)).json()['fast']
-    return render_template("home.html", summoner=session['username'], data=freechamps, last=lastgame, top=topkills, fast=fastgame)
+    fastgame = requests.get(app.service + 'fastmatch/' + str(id)).json()['fast']
+    count = requests.get(app.service + 'count/' + str(id)).json()['count']
+    return render_template("home.html", summoner=session['username'], data=freechamps, last=lastgame, top=topkills, fast=fastgame, count=count)
 
 
 
@@ -106,7 +107,6 @@ def log_in():
                 global match_id
                 id = summoner['id']
                 newid = id
-                print id
                 try:
                     match_history = w.get_recent_games(id)
                     match_history = match_history.get('games')
@@ -183,7 +183,6 @@ def log_in():
                 damagedealt = []
                 if match_found == True:
                     for x in xrange(len(match_history)):
-                        print len(match_history)
                         mId = match_history[x].get('gameId')
                         mDuration = match_history[x].get('stats').get('timePlayed')
                         connect.cursor.execute("UPDATE LEAGUE.MATCH SET duration = '{0}' WHERE match_id = '{1}' AND summoner_id = '{2}'".format(mDuration, mId, id))

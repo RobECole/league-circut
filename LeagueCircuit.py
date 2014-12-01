@@ -71,12 +71,17 @@ def home():
     #if 'username' in session:
     #connect.cursor.execute("SELECT summoner_id, game_id FROM LEAGUE.PLAYER WHERE summoner_name = '{0}'".format(session['username']))
     #passing = connect.cursor.fetchall()
-    topkills = requests.get(app.service + 'topkills/' + str(match_id)).json()['top']
     lastgame = requests.get(app.service + 'lastGame/' + str(id)).json()['last']
+    pleb = requests.get(app.service + 'pleb').json()['pleb']
+    topkills = requests.get(app.service + 'topkills/' + str(match_id)).json()['top']
+    champdata = requests.get(app.service + 'champdata').json()['champ']
     freechamps = requests.get(app.service + 'freeChamps').json()['data']
     fastgame = requests.get(app.service + 'fastmatch/' + str(id)).json()['fast']
+    wins = requests.get(app.service + 'wins/' + str(id)).json()['wins']
     count = requests.get(app.service + 'count/' + str(id)).json()['count']
-    return render_template("home.html", summoner=session['username'], data=freechamps, last=lastgame, top=topkills, fast=fastgame, count=count)
+    secondary = requests.get(app.service + 'secondarystats/' + str(match_id)).json()['secondary']
+
+    return render_template("home.html", summoner=session['username'], data=freechamps, last=lastgame, top=topkills, fast=fastgame, count=count, pleb=pleb, champ=champdata, wins=wins, secondary=secondary)
 
 
 

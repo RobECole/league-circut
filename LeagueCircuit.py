@@ -38,7 +38,6 @@ def sign_up():
         name = form.summoner_name.data.encode('ascii', 'ignore').lower()
         connect.cursor.execute("SELECT username FROM LEAGUE.USER WHERE username = '{0}'".format(mail))
         err = False
-        #print
         try:
             w.get_summoner(name)
         except:
@@ -122,6 +121,7 @@ def log_in():
                         connect.cursor.execute("UPDATE LEAGUE.MATCHLIST SET sumid = '{0}' WHERE id = '{1}'".format(id, match_id))
                         if connect.cursor.rowcount == 0:
                                 connect.cursor.execute("INSERT INTO LEAGUE.MATCHLIST VALUES ('{0}', '{1}')".format(id, match_id))
+                    match_found = True
                     match_id = match_history[0].get('gameId')
                 except:
                     print 'No match history found'

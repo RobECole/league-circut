@@ -71,7 +71,7 @@ def home():
     #connect.cursor.execute("SELECT summoner_id, game_id FROM LEAGUE.PLAYER WHERE summoner_name = '{0}'".format(session['username']))
     #passing = connect.cursor.fetchall()
     lastgame = requests.get(app.service + 'lastGame/' + str(id)).json()['last']
-    pleb = requests.get(app.service + 'pleb').json()['pleb']
+    pleb = requests.get(app.service + 'pleb/'+str(match_id)).json()['pleb']
     topkills = requests.get(app.service + 'topkills/' + str(match_id)).json()['top']
     champdata = requests.get(app.service + 'champdata').json()['champ']
     freechamps = requests.get(app.service + 'freeChamps').json()['data']
@@ -79,8 +79,9 @@ def home():
     wins = requests.get(app.service + 'wins/' + str(id)).json()['wins']
     count = requests.get(app.service + 'count/' + str(id)).json()['count']
     secondary = requests.get(app.service + 'secondarystats/' + str(match_id)).json()['secondary']
+    kdr = requests.get(app.service + 'kdr/' + str(match_id)).json()['kdr']
 
-    return render_template("home.html", summoner=session['username'], data=freechamps, last=lastgame, top=topkills, fast=fastgame, count=count, pleb=pleb, champ=champdata, wins=wins, secondary=secondary)
+    return render_template("home.html", summoner=session['username'], data=freechamps, last=lastgame, top=topkills, fast=fastgame, count=count, pleb=pleb, champ=champdata, wins=wins, secondary=secondary, kdr=kdr)
 
 
 
@@ -128,26 +129,34 @@ def log_in():
                     match_id = 0
                 try:
                     team = w.get_teams_for_summoner(id)
+                    win5v5 = 0
+                    win3v3 = 0
                     for x in range(0, len(team)):
                         teamid = team[x].get('fullId')
                         connect.cursor.execute("UPDATE LEAGUE.TEAMLIST SET sumid = '{0}' WHERE id = '{1}'".format(id, teamid))
                         if connect.cursor.rowcount == 0:
                             connect.cursor.execute("INSERT INTO LEAGUE.TEAMLIST VALUES('{0}', '{1}')".format(id, teamid))
-                    teamid = team[1].get('fullId')
-                    teamstat = team[0].get('teamStatDetails')
-                    win5v5 = teamstat[0].get('wins')
-                    win3v3 = teamstat[1].get('wins')
-                    team_record = w.get_team(teamid)
-                    tname = team_record.get('name')
-                    tname = tname.encode('ascii', 'ignore')
-                    team_record = team_record.get('teamStatDetails')
-                    for x in range(0, len(team_record)):
-                        if team_record[x].get('teamStatType') == 'RANKED_TEAM_3x3':
-                            twin3v3 = team_record[x].get('wins')
-                            tloss3v3 = team_record[x].get('losses')
-                        elif team_record[x].get('teamStatType') == 'RANKED_TEAM_5x5':
-                            twin5v5 = team_record[x].get('wins')
-                            tloss5v5 = team_record[x].get('losses')
+                        teamid = team[x].get('fullId')
+                        teamstat = team[x].get('teamStatDetails')
+
+                        team_record = w.get_team(teamid)
+                        tname = team_record.get('name')
+                        tname = tname.encode('ascii', 'ignore')
+                        team_record = team_record.get('teamStatDetails')
+                        for x in range(0, len(team_record)):
+                            if team_record[x].get('teamStatType') == 'RANKED_TEAM_3x3':
+                                twin3v3 = team_record[x].get('wins')
+                                win3v3 += twin3v3
+                                tloss3v3 = team_record[x].get('losses')
+                            elif team_record[x].get('teamStatType') == 'RANKED_TEAM_5x5':
+                                twin5v5 = team_record[x].get('wins')
+                                win5v5 += twin5v5
+                                tloss5v5 = team_record[x].get('losses')
+                        print win3v3
+                        print win5v5
+                        connect.cursor.execute("UPDATE LEAGUE.TEAM SET team_name = '{0}', wins3v3 = '{1}', losses3v3 = '{2}', wins5v5 = '{3}', losses5v5 = '{4}' WHERE team_id = '{5}'".format(tname, twin3v3, tloss3v3, twin5v5, tloss5v5, teamid))
+                        if connect.cursor.rowcount == 0:
+                            connect.cursor.execute("INSERT INTO LEAGUE.TEAM VALUES ('{0}','{1}','{2}','{3}','{4}','{5}')".format(teamid, tname, twin3v3, tloss3v3, twin5v5, tloss5v5))
                 except:
                     print 'No team data found'
                     teamid = 0
